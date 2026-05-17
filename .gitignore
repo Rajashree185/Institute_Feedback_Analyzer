@@ -5,7 +5,7 @@ node_modules/
 .env
 
 # SQLite database
-*.db
+*.db*
 
 # Build output
 client/dist/
