@@ -1,0 +1,17 @@
+{
+  "name": "institute-feedback-analyzer",
+  "version": "1.0.0",
+  "description": "A full-stack web application for academic feedback management with RBAC, attendance guardrails, and NLP sentiment analysis.",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/app.js",
+    "client": "npm run dev --prefix client",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
