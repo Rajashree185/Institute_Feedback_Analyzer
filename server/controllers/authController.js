@@ -5,7 +5,7 @@ const db = require('../models/db');
 /**
  * POST /api/auth/register
  * Registers a new user (student or teacher).
- * Students provide: name, email, password, role, roll_no, department, attendance
+ * Students provide: name, email, password, role, roll_no, department, year, semester, attendance
  * Teachers provide: name, email, password, role, subject, department
  */
 const register = (req, res) => {
@@ -54,13 +54,39 @@ const register = (req, res) => {
 
     // ── Insert into role-specific table ──
     if (role === 'student') {
-      const { roll_no, department } = req.body;
+      const { roll_no, department, year, semester } = req.body;
 
-      if (!roll_no || !department) {
+      if (!roll_no || !department || !year || !semester) {
         // Rollback: delete the user we just created
         db.prepare('DELETE FROM users WHERE id = ?').run(userId);
         return res.status(400).json({
-          error: 'Students must provide roll_no and department.'
+          error: 'Students must provide roll_no, department, year, and semester.'
+        });
+      }
+
+      // Validate year range
+      const yearNum = parseInt(year);
+      if (isNaN(yearNum) || yearNum < 1 || yearNum > 4) {
+        db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+        return res.status(400).json({
+          error: 'Year must be between 1 and 4.'
+        });
+      }
+
+      // Validate semester range
+      const semNum = parseInt(semester);
+      if (isNaN(semNum) || semNum < 1 || semNum > 8) {
+        db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+        return res.status(400).json({
+          error: 'Semester must be between 1 and 8.'
+        });
+      }
+
+      // Validate that the semester corresponds to the year
+      if (Math.ceil(semNum / 2) !== yearNum) {
+        db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+        return res.status(400).json({
+          error: `Invalid semester for Year ${yearNum}. Valid semesters are ${yearNum * 2 - 1} and ${yearNum * 2}.`
         });
       }
 
@@ -74,8 +100,8 @@ const register = (req, res) => {
       }
 
       db.prepare(
-        'INSERT INTO students (user_id, roll_no, department, attendance) VALUES (?, ?, ?, ?)'
-      ).run(userId, roll_no, department, 100.0);
+        'INSERT INTO students (user_id, roll_no, department, year, semester, attendance) VALUES (?, ?, ?, ?, ?, ?)'
+      ).run(userId, roll_no, department, yearNum, semNum, 100.0);
 
     } else if (role === 'teacher') {
       const { subject, department } = req.body;

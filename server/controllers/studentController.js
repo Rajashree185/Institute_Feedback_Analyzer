@@ -9,7 +9,7 @@ const sentiment = new Sentiment();
 const getProfile = (req, res) => {
   try {
     const profile = db.prepare(`
-      SELECT u.name, u.email, s.roll_no, s.department, s.attendance, s.id as student_id
+      SELECT u.name, u.email, s.roll_no, s.department, s.year, s.semester, s.section, s.attendance, s.id as student_id
       FROM users u
       JOIN students s ON s.user_id = u.id
       WHERE u.id = ?
@@ -213,4 +213,55 @@ const updateAttendance = (req, res) => {
   }
 };
 
-module.exports = { getProfile, getTeachers, submitFeedback, getMyFeedback, updateAttendance };
+/**
+ * PUT /api/student/section
+ * Updates the authenticated student's section (only allowed for Computer Science and Electronics & Communication).
+ */
+const updateSection = (req, res) => {
+  try {
+    const { section } = req.body;
+
+    if (section === undefined || section === null) {
+      return res.status(400).json({ error: 'Section value is required.' });
+    }
+
+    const sectionNum = parseInt(section);
+    if (isNaN(sectionNum) || sectionNum < 1 || sectionNum > 4) {
+      return res.status(400).json({ error: 'Section must be an integer between 1 and 4.' });
+    }
+
+    // Check if the student belongs to CS or Electronics & Communication department
+    const student = db.prepare(`
+      SELECT department FROM students WHERE user_id = ?
+    `).get(req.user.userId);
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    const allowedDepts = ['Computer Science', 'Electronics & Communication'];
+    if (!allowedDepts.includes(student.department)) {
+      return res.status(403).json({ error: 'Only students of Computer Science or Electronics & Communication departments can set a section.' });
+    }
+
+    const result = db.prepare(`
+      UPDATE students
+      SET section = ?
+      WHERE user_id = ?
+    `).run(sectionNum, req.user.userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    res.status(200).json({
+      message: 'Section updated successfully.',
+      section: sectionNum
+    });
+  } catch (err) {
+    console.error('Update section error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+module.exports = { getProfile, getTeachers, submitFeedback, getMyFeedback, updateAttendance, updateSection };

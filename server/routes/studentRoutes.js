@@ -7,7 +7,8 @@ const {
   getTeachers,
   submitFeedback,
   getMyFeedback,
-  updateAttendance
+  updateAttendance,
+  updateSection
 } = require('../controllers/studentController');
 
 // All student routes require JWT + student role
@@ -19,6 +20,9 @@ router.get('/profile', getProfile);
 
 // PUT /api/student/attendance — Update attendance percentage dynamically
 router.put('/attendance', updateAttendance);
+
+// PUT /api/student/section — Update student section dynamically
+router.put('/section', updateSection);
 
 // GET /api/student/teachers — List all teachers for the feedback form dropdown
 router.get('/teachers', getTeachers);

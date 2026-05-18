@@ -34,10 +34,20 @@ db.exec(`
     user_id INTEGER NOT NULL,
     roll_no TEXT UNIQUE NOT NULL,
     department TEXT NOT NULL,
+    year INTEGER NOT NULL DEFAULT 1 CHECK(year >= 1 AND year <= 4),
+    semester INTEGER NOT NULL DEFAULT 1 CHECK(semester >= 1 AND semester <= 8),
     attendance REAL NOT NULL CHECK(attendance >= 0.0 AND attendance <= 100.0),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )
 `);
+
+// ── Migration: Add year & semester columns if they don't exist (for existing DBs) ──
+try {
+  db.exec(`ALTER TABLE students ADD COLUMN year INTEGER NOT NULL DEFAULT 1 CHECK(year >= 1 AND year <= 4)`);
+} catch (_) { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE students ADD COLUMN semester INTEGER NOT NULL DEFAULT 1 CHECK(semester >= 1 AND semester <= 8)`);
+} catch (_) { /* column already exists */ }
 
 // TEACHERS Table — Teacher Profile (extends USERS)
 db.exec(`

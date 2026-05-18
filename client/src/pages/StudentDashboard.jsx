@@ -12,6 +12,11 @@ const StudentDashboard = () => {
   const [isUpdatingAttendance, setIsUpdatingAttendance] = useState(false);
   const [attendanceSuccess, setAttendanceSuccess] = useState(false);
 
+  // Section State (only for Computer Science & Electronics & Communication)
+  const [studentSection, setStudentSection] = useState('');
+  const [isUpdatingSection, setIsUpdatingSection] = useState(false);
+  const [sectionSuccess, setSectionSuccess] = useState(false);
+
   // Feedback Form State
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
@@ -40,8 +45,31 @@ const StudentDashboard = () => {
       setProfile(response.data.profile);
       setAttendance(response.data.profile.attendance);
       setAttendanceInput(response.data.profile.attendance.toString());
+      setStudentSection(response.data.profile.section || '');
     } catch (err) {
       console.error('Failed to fetch profile', err);
+    }
+  };
+
+  const handleSectionChange = async (val) => {
+    setStudentSection(val);
+    if (!val) return;
+
+    setIsUpdatingSection(true);
+    setSectionSuccess(false);
+    try {
+      const response = await api.put('/student/section', { section: parseInt(val) });
+      setIsUpdatingSection(false);
+      setSectionSuccess(true);
+      
+      // Update profile locally to keep it in sync
+      setProfile(prev => prev ? { ...prev, section: response.data.section } : null);
+      
+      // Hide success notification after 2.5 seconds
+      setTimeout(() => setSectionSuccess(false), 2500);
+    } catch (err) {
+      console.error('Failed to update section', err);
+      setIsUpdatingSection(false);
     }
   };
 
@@ -221,6 +249,58 @@ const StudentDashboard = () => {
                     <div className="text-sm font-bold text-white leading-tight">{profile.department}</div>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-[#1b1c24]/50 border border-gray-800/40 rounded-2xl">
+                    <div className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Year</div>
+                    <div className="text-sm font-bold text-white">
+                      {profile.year === 1 ? '1st Year' : profile.year === 2 ? '2nd Year' : profile.year === 3 ? '3rd Year' : '4th Year'}
+                    </div>
+                  </div>
+                   <div className="p-4 bg-[#1b1c24]/50 border border-gray-800/40 rounded-2xl">
+                    <div className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Semester</div>
+                    <div className="text-sm font-bold text-white">
+                      {profile.semester === 1 ? '1st Sem' : 
+                       profile.semester === 2 ? '2nd Sem' : 
+                       profile.semester === 3 ? '3rd Sem' : 
+                       `${profile.semester}th Sem`}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Only show Section if department is Computer Science or Electronics & Communication */}
+                {(profile.department === 'Computer Science' || profile.department === 'Electronics & Communication') && (
+                  <div className="mt-4 p-4 bg-[#1b1c24]/50 border border-gray-800/40 rounded-2xl relative">
+                    <div className="text-xs text-gray-500 font-semibold mb-2 uppercase tracking-wider">Select Section</div>
+                    <div className="relative">
+                      <select
+                        value={studentSection}
+                        onChange={(e) => handleSectionChange(e.target.value)}
+                        className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#a855f7]/50 focus:ring-1 focus:ring-[#a855f7]/50 rounded-xl py-2.5 px-4 text-white text-sm outline-none transition-all cursor-pointer"
+                        disabled={isUpdatingSection}
+                      >
+                        <option value="" disabled className="bg-[#0b0c10]">Choose Section...</option>
+                        <option value="1" className="bg-[#0b0c10]">Section 1</option>
+                        <option value="2" className="bg-[#0b0c10]">Section 2</option>
+                        <option value="3" className="bg-[#0b0c10]">Section 3</option>
+                        <option value="4" className="bg-[#0b0c10]">Section 4</option>
+                      </select>
+
+                      <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                        {isUpdatingSection && (
+                          <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider animate-pulse">
+                            Saving...
+                          </span>
+                        )}
+                        {sectionSuccess && (
+                          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider animate-fade-in">
+                            ✓ Saved
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="animate-pulse space-y-4">
@@ -316,6 +396,8 @@ const StudentDashboard = () => {
               )}
             </div>
           </div>
+
+
         </section>
 
         {/* RIGHT COLUMN: Feedback Submission Form (8 cols) */}

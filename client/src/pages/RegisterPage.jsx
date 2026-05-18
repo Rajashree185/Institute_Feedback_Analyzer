@@ -10,10 +10,14 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Student Fields
   const [rollNo, setRollNo] = useState('');
   const [studentDept, setStudentDept] = useState('');
+  const [studentYear, setStudentYear] = useState('');
+  const [studentSemester, setStudentSemester] = useState('');
 
   // Teacher Fields
   const [subject, setSubject] = useState('');
@@ -29,6 +33,19 @@ const RegisterPage = () => {
     setError(null);
     setLocalError('');
   }, [role, setError]);
+
+  // Reset semester if year changes to something incompatible
+  useEffect(() => {
+    if (studentYear) {
+      const yearNum = parseInt(studentYear);
+      const semNum = parseInt(studentSemester);
+      if (semNum && Math.ceil(semNum / 2) !== yearNum) {
+        setStudentSemester('');
+      }
+    } else {
+      setStudentSemester('');
+    }
+  }, [studentYear]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +80,7 @@ const RegisterPage = () => {
     };
 
     if (role === 'student') {
-      if (!rollNo || !studentDept) {
+      if (!rollNo || !studentDept || !studentYear || !studentSemester) {
         setLocalError('Please complete all student profile fields.');
         setIsSubmitting(false);
         return;
@@ -71,6 +88,8 @@ const RegisterPage = () => {
 
       registrationData.roll_no = rollNo;
       registrationData.department = studentDept;
+      registrationData.year = parseInt(studentYear);
+      registrationData.semester = parseInt(studentSemester);
     } else {
       if (!subject || !teacherDept) {
         setLocalError('Please complete all teacher profile fields.');
@@ -152,59 +171,120 @@ const RegisterPage = () => {
 
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+          {/* Full Name */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </span>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Riya Sharma"
-                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all placeholder:text-gray-600"
-                disabled={isSubmitting}
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="riya@test.com"
-                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all placeholder:text-gray-600"
+                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 pl-11 pr-4 text-white text-sm outline-none transition-all duration-200 placeholder:text-gray-600"
                 disabled={isSubmitting}
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+          {/* Email Address */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+              </span>
               <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min 6 chars"
-                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all placeholder:text-gray-600"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@institution.edu"
+                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 pl-11 pr-4 text-white text-sm outline-none transition-all duration-200 placeholder:text-gray-600"
                 disabled={isSubmitting}
                 required
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+              </span>
               <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repeat password"
-                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all placeholder:text-gray-600"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min 6 chars"
+                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 pl-11 pr-10 text-white text-sm outline-none transition-all duration-200 placeholder:text-gray-600"
                 disabled={isSubmitting}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 hover:text-white transition-colors"
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+              </span>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat password"
+                className="w-full bg-[#1b1c24]/30 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 pl-11 pr-10 text-white text-sm outline-none transition-all duration-200 placeholder:text-gray-600"
+                disabled={isSubmitting}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 hover:text-white transition-colors"
+              >
+                {showConfirmPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
 
@@ -241,10 +321,68 @@ const RegisterPage = () => {
                   >
                     <option value="" disabled className="bg-[#0b0c10]">Select Department</option>
                     <option value="Computer Science" className="bg-[#0b0c10]">Computer Science</option>
-                    <option value="Information Technology" className="bg-[#0b0c10]">Information Technology</option>
+                    <option value="AI/ML" className="bg-[#0b0c10]">AI/ML</option>
                     <option value="Electronics & Communication" className="bg-[#0b0c10]">Electronics & Communication</option>
                     <option value="Electrical Engineering" className="bg-[#0b0c10]">Electrical Engineering</option>
                     <option value="Mechanical Engineering" className="bg-[#0b0c10]">Mechanical Engineering</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Year</label>
+                  <select
+                    value={studentYear}
+                    onChange={(e) => setStudentYear(e.target.value)}
+                    className="w-full bg-[#1b1c24]/50 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all"
+                    disabled={isSubmitting}
+                    required
+                  >
+                    <option value="" disabled className="bg-[#0b0c10]">Select Year</option>
+                    <option value="1" className="bg-[#0b0c10]">1st Year</option>
+                    <option value="2" className="bg-[#0b0c10]">2nd Year</option>
+                    <option value="3" className="bg-[#0b0c10]">3rd Year</option>
+                    <option value="4" className="bg-[#0b0c10]">4th Year</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Semester</label>
+                  <select
+                    value={studentSemester}
+                    onChange={(e) => setStudentSemester(e.target.value)}
+                    className="w-full bg-[#1b1c24]/50 border border-gray-800/80 focus:border-[#6366f1]/50 focus:ring-1 focus:ring-[#6366f1]/50 rounded-xl py-3 px-4 text-white text-sm outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting || !studentYear}
+                    required
+                  >
+                    <option value="" disabled className="bg-[#0b0c10]">
+                      {!studentYear ? 'Select Year First' : 'Select Semester'}
+                    </option>
+                    {studentYear === '1' && (
+                      <>
+                        <option value="1" className="bg-[#0b0c10]">1st Semester</option>
+                        <option value="2" className="bg-[#0b0c10]">2nd Semester</option>
+                      </>
+                    )}
+                    {studentYear === '2' && (
+                      <>
+                        <option value="3" className="bg-[#0b0c10]">3rd Semester</option>
+                        <option value="4" className="bg-[#0b0c10]">4th Semester</option>
+                      </>
+                    )}
+                    {studentYear === '3' && (
+                      <>
+                        <option value="5" className="bg-[#0b0c10]">5th Semester</option>
+                        <option value="6" className="bg-[#0b0c10]">6th Semester</option>
+                      </>
+                    )}
+                    {studentYear === '4' && (
+                      <>
+                        <option value="7" className="bg-[#0b0c10]">7th Semester</option>
+                        <option value="8" className="bg-[#0b0c10]">8th Semester</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
@@ -284,7 +422,7 @@ const RegisterPage = () => {
                   >
                     <option value="" disabled className="bg-[#0b0c10]">Select Department</option>
                     <option value="Computer Science" className="bg-[#0b0c10]">Computer Science</option>
-                    <option value="Information Technology" className="bg-[#0b0c10]">Information Technology</option>
+                    <option value="AI/ML" className="bg-[#0b0c10]">AI/ML</option>
                     <option value="Electronics & Communication" className="bg-[#0b0c10]">Electronics & Communication</option>
                     <option value="Electrical Engineering" className="bg-[#0b0c10]">Electrical Engineering</option>
                     <option value="Mechanical Engineering" className="bg-[#0b0c10]">Mechanical Engineering</option>

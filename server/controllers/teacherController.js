@@ -42,7 +42,7 @@ const getFeedback = (req, res) => {
 
     const feedbackList = db.prepare(`
       SELECT f.id, f.rating, f.remarks, f.sentiment, f.score, f.submitted_at,
-             u.name as student_name, s.roll_no, s.department as student_department, s.attendance
+             u.name as student_name, s.roll_no, s.department as student_department, s.year as student_year, s.semester as student_semester, s.attendance
       FROM feedback f
       JOIN students s ON s.id = f.student_id
       JOIN users u ON u.id = s.user_id
